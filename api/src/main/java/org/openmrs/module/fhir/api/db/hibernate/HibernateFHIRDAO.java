@@ -15,8 +15,20 @@ package org.openmrs.module.fhir.api.db.hibernate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.jdbc.Work;
+import org.openmrs.Obs;
+import org.openmrs.Order;
 import org.openmrs.module.fhir.api.db.FHIRDAO;
+
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * It is a default implementation of  {@link FHIRDAO}.
@@ -39,5 +51,57 @@ public class HibernateFHIRDAO implements FHIRDAO {
 	 */
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
+	}
+
+
+	@Override
+	public <Ord extends Order> List<Ord> getOrdersByAccessionNumber(String accessionNumber) {
+		return getCurrentSession().createQuery("from Order o where o.accessionNumber = :accessionNumber").setString("accessionNumber", accessionNumber).list();
+	}
+
+//	public List<Obs> getObsForOrderId(Object orderId) {
+//		Criteria criteria = getCurrentSession().createCriteria(Obs.class, "obs");
+//		criteria.createAlias("order", "ord");
+//		criteria.add(Restrictions.eq("ord.orderId", orderId));
+//		return criteria.list();
+//		//return (Obs) getCurrentSession().createQuery("from Obs o where o.uuid = :uuid").setString("uuid",uuid).uniqueResult();
+//	}
+
+	@Override
+	public Integer getEncounterIdForObsOrder(final int orderId) {
+		final int[] encounterIds = new int[1];
+		getCurrentSession().doWork(new Work() {
+			@Override
+			public void execute(Connection connection) throws SQLException {
+				String query = "SELECT distinct encounter_id FROM obs where order_id = ?";
+				PreparedStatement stmt = connection.prepareStatement(query);
+				stmt.setInt(1, orderId);
+				ResultSet resultSet = stmt.executeQuery();
+				int encounterId = -1;
+				while (resultSet.next()) {
+					encounterId = resultSet.getInt("encounter_id");
+				}
+				resultSet.close();
+				encounterIds[0] = encounterId;
+			}
+		});
+		if (encounterIds[0] > 0) {
+			return encounterIds[0];
+		}
+		return null;
+	}
+
+	private org.hibernate.Session getCurrentSession() {
+		try {
+			return sessionFactory.getCurrentSession();
+		}  catch (NoSuchMethodError ex) {
+			try {
+				Method method = sessionFactory.getClass().getMethod("getCurrentSession", null);
+				return (org.hibernate.Session)method.invoke(sessionFactory, null);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Failed to get the current hibernate session", e);
+			}
+		}
 	}
 }

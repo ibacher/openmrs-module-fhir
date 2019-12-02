@@ -15,20 +15,27 @@ package org.openmrs.module.fhir.api.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.jdbc.Work;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DiagnosticReport;
 import org.openmrs.Encounter;
+import org.openmrs.Order;
 import org.openmrs.api.APIException;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.fhir.api.DiagnosticReportService;
 import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.hibernate.HibernateFHIRDAO;
 import org.openmrs.module.fhir.api.diagnosticreport.DiagnosticReportHandler;
 import org.openmrs.module.fhir.api.util.FHIRConstants;
 import org.openmrs.module.fhir.api.util.FHIRDiagnosticReportUtil;
 import org.openmrs.util.OpenmrsClassLoader;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,15 +75,32 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 	}
 
 	@Override
-	public DiagnosticReport getDiagnosticReport(String id) {
-		// Find Diagnostic Report (Encounter) in OpenMRS database
-		EncounterService encounterService = Context.getEncounterService();
-		Encounter omrsDiagnosticReport = encounterService.getEncounterByUuid(id);
-		// Get corresponding Handler
-		String handlerName = omrsDiagnosticReport.getEncounterType().getName();
+	public DiagnosticReport getDiagnosticReport(final String reportId) {
+		List<Order> orders = dao.getOrdersByAccessionNumber(reportId);
+		int orderId = 0;
+		if ((orders != null) && !orders.isEmpty()) {
+			orderId = orders.get(0).getOrderId();
+		}
 
-		return FHIRDiagnosticReportUtil.getFHIRDiagnosticReport(id, getHandler(handlerName));
+		String handlerName = null;
+		if (orderId > 0) {
+			Order order = Context.getOrderService().getOrder(orderId);
+			if (order == null) {
+				throw new RuntimeException("Can not find order by the accession number");
+			}
+			String orderTypeName = order.getOrderType().getName();
+			if (orderTypeName.equals("Lab Order")) {
+				handlerName = "LAB";
+			} else {
+				handlerName = "DEFAULT";
+			}
+			return FHIRDiagnosticReportUtil.getFHIRDiagnosticReport(order.getUuid(), getHandler(handlerName));
+		} else {
+			throw new RuntimeException("Can not identify order by accession number");
+		}
+
 	}
+
 
 	@Override
 	public DiagnosticReport createFHIRDiagnosticReport(DiagnosticReport diagnosticReport) {
