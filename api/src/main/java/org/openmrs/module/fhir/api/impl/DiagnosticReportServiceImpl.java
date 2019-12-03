@@ -53,7 +53,6 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 	public DiagnosticReportServiceImpl() {
 		orderTypeToHandlerNameMap.put("Lab Order", "LAB");
 		orderTypeToHandlerNameMap.put("Default", "DEFAULT");
-		loadHandlerMap();
 	}
 
 	//TODO: find a better way to do this!!
@@ -95,6 +94,7 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 
 	@Override
 	public DiagnosticReport getDiagnosticReport(final String reportId) {
+		loadHandlerMap();
 		List<Order> orders = dao.getOrdersByAccessionNumber(reportId);
 		int orderId = 0;
 		if ((orders != null) && !orders.isEmpty()) {
