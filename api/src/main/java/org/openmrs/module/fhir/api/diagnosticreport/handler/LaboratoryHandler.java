@@ -9,7 +9,7 @@ import org.openmrs.*;
 import org.openmrs.Encounter;
 import org.openmrs.Patient;
 import org.openmrs.api.APIException;
-import org.openmrs.api.EncounterService;
+	import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.fhir.api.ObsService;
 	import org.openmrs.module.fhir.api.db.FHIRDAO;
@@ -79,6 +79,7 @@ public class LaboratoryHandler extends AbstractHandler implements DiagnosticRepo
 		log.debug("Laboratory Handler : GetFHIRDiagnosticReport");
 		Order orderByUuid = Context.getOrderService().getOrderByUuid(orderUuid);
 		Integer encounterIdForObsOrder = dao.getEncounterIdForObsOrder(orderByUuid.getOrderId());
+		String orderClass = getOrderClass(orderByUuid);
 
 		Encounter encounter = Context.getEncounterService().getEncounter(encounterIdForObsOrder);
 		Set<Obs> obsAtTopLevel = encounter.getObsAtTopLevel(false);
@@ -91,6 +92,10 @@ public class LaboratoryHandler extends AbstractHandler implements DiagnosticRepo
 		}
 		Map<String, Set<Obs>> obsSetsMap = populateObsForResult(resultObs, false);
 		return createDiagnosticReport(orderByUuid, encounter, obsSetsMap);
+	}
+
+	private String getOrderClass(Order orderByUuid) {
+		return orderByUuid.getConcept().getConceptClass().getName();
 	}
 
 	private DiagnosticReport createDiagnosticReport(Order order, Encounter omrsDiagnosticReportEncounter,

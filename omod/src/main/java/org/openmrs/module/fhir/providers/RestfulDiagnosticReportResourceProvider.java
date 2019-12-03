@@ -74,7 +74,7 @@ public class RestfulDiagnosticReportResourceProvider implements IResourceProvide
 	 * @return Returns a resource matching this identifier, or null if none exists.
 	 */
 	@Read
-	public DiagnosticReport getResourceById(@IdParam IdType theId) {
+	public Resource getResourceById(@IdParam IdType theId) {
 		return diagnosticReportResource.getByUniqueId(theId);
 	}
 

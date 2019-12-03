@@ -59,13 +59,6 @@ public class HibernateFHIRDAO implements FHIRDAO {
 		return getCurrentSession().createQuery("from Order o where o.accessionNumber = :accessionNumber").setString("accessionNumber", accessionNumber).list();
 	}
 
-//	public List<Obs> getObsForOrderId(Object orderId) {
-//		Criteria criteria = getCurrentSession().createCriteria(Obs.class, "obs");
-//		criteria.createAlias("order", "ord");
-//		criteria.add(Restrictions.eq("ord.orderId", orderId));
-//		return criteria.list();
-//		//return (Obs) getCurrentSession().createQuery("from Obs o where o.uuid = :uuid").setString("uuid",uuid).uniqueResult();
-//	}
 
 	@Override
 	public Integer getEncounterIdForObsOrder(final int orderId) {

@@ -26,7 +26,7 @@ import java.util.List;
 
 public class FHIRDiagnosticReportResource extends Resource {
 
-	public DiagnosticReport getByUniqueId(IdType id) {
+	public org.hl7.fhir.dstu3.model.Resource getByUniqueId(IdType id) {
 		DiagnosticReportService diagnosticReportService = Context.getService(DiagnosticReportService.class);
 		DiagnosticReport fhirDiagnosticReport = diagnosticReportService.getDiagnosticReport(id.getIdPart());
 		if (fhirDiagnosticReport == null) {
