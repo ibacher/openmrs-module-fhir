@@ -8,6 +8,8 @@ public interface DiagnosticReportHandler {
 
 	String getServiceCategory();
 
+	String getServiceCategoryDescription();
+
 	DiagnosticReport getFHIRDiagnosticReportById(String id);
 
 	List<DiagnosticReport> getFHIRDiagnosticReportBySubjectName(String name);

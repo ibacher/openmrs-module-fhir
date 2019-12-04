@@ -5,13 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hl7.fhir.dstu3.model.DiagnosticReport;
 import org.openmrs.Encounter;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir.api.diagnosticreport.DiagnosticReportHandler;
 import org.openmrs.module.fhir.api.util.FHIRConstants;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultDiagnosticReportHandler extends AbstractDiagnosticReportHandler implements DiagnosticReportHandler {
+public class DefaultDiagnosticReportHandler extends AbstractDiagnosticReportHandler {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
@@ -22,6 +21,11 @@ public class DefaultDiagnosticReportHandler extends AbstractDiagnosticReportHand
 	@Override
 	public String getServiceCategory() {
 		return FHIRConstants.DEFAULT;
+	}
+
+	@Override
+	public String getServiceCategoryDescription() {
+		return "Default";
 	}
 
 	@Override

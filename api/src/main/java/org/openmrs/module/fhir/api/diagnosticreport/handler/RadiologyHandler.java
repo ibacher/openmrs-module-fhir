@@ -8,8 +8,6 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hl7.fhir.dstu3.model.Attachment;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.hl7.fhir.dstu3.model.DiagnosticReport;
@@ -23,7 +21,6 @@ import org.openmrs.Obs;
 import org.openmrs.api.EncounterService;
 import org.openmrs.api.ObsService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.fhir.api.diagnosticreport.DiagnosticReportHandler;
 import org.openmrs.module.fhir.api.util.ErrorUtil;
 import org.openmrs.module.fhir.api.util.FHIRConstants;
 import org.openmrs.module.fhir.api.util.FHIRImagingStudyUtil;
@@ -37,19 +34,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class RadiologyHandler extends AbstractHandler implements DiagnosticReportHandler {
+public class RadiologyHandler extends AbstractDiagnosticReportHandler {
 
-	private static final String ServiceCategory = "RAD";
+	private static final String SERVICE_CATEGORY = "RAD";
 
-	protected final Log log = LogFactory.getLog(this.getClass());
-
-	public RadiologyHandler() {
-		super();
-	}
+	private static final String SERVICE_CATEGORY_DESCRIPTION = "Radiology";
 
 	@Override
 	public String getServiceCategory() {
-		return ServiceCategory;
+		return SERVICE_CATEGORY;
+	}
+
+	@Override
+	public String getServiceCategoryDescription() {
+		return SERVICE_CATEGORY_DESCRIPTION;
 	}
 
 	@Override
@@ -144,19 +142,19 @@ public class RadiologyHandler extends AbstractHandler implements DiagnosticRepor
 		// Set `Diagnosis[x]->DateTime` as valueDateTime in an Obs
 		// Set `Diagnosis[x]->Period` as valueDateTime in an Obs
 
-		/**
+		/*
 		 * Create resource in OpenMRS Database RATIONALE: Due to encounter.setObs(obsList) method is
 		 * not working properly and need to set encounter for the Obs before create them to link
 		 * with the Encounter. In order to set the Encounter, it has to be save before set.
 		 */
 		Encounter omrsEncounter = encounterService.saveEncounter(omrsDiagnosticReport);
 
-		/****************************** Set `Result` field *************************************************/
+		/* ***************************** Set `Result` field ************************************************ */
 		// Set parsed obsSet (`Result` as Set of Obs)
-		Set<Obs> resultObsGroupMembersSet = new HashSet<>();
+		Set<Obs> resultObsGroupMembersSet = new HashSet<Obs>();
 		// Iterate through 'result' Observations and adding to the OpenMRS Obs group
 		for (Reference referenceDt : diagnosticReport.getResult()) {
-			List<String> errors = new ArrayList<>();
+			List<String> errors = new ArrayList<String>();
 			Observation observation = null;
 
 			if (!referenceDt.getReference().isEmpty()) {
@@ -175,6 +173,11 @@ public class RadiologyHandler extends AbstractHandler implements DiagnosticRepor
 					}
 				}
 			}
+
+			if (observation == null) {
+				continue;
+			}
+
 			Obs obs = FHIRObsUtil.generateOpenMRSObs(prepareForGenerateOpenMRSObs(observation, diagnosticReport), errors);
 			if (errors.isEmpty()) {
 				obs = obsService.saveObs(obs, null);
@@ -192,13 +195,13 @@ public class RadiologyHandler extends AbstractHandler implements DiagnosticRepor
 			obsService.saveObs(resultObsGroup, null);
 		} //-- END of set `result`
 
-		/****************************** Set `ImagingStudy` as a set of Obs *********************************/
-		Set<Obs> imagingStudyObsGroupMembersSet = new HashSet<>();
+		/* ***************************** Set `ImagingStudy` as a set of Obs ******************************** */
+		Set<Obs> imagingStudyObsGroupMembersSet = new HashSet<Obs>();
 		// Iterate through 'ImagingStudy', convert to the OpenMRS Obs group
 		for (Reference referenceDt : diagnosticReport.getImagingStudy()) {
 			Obs obs;
 			if (!referenceDt.getReference().isEmpty()) {
-				List<String> errors = new ArrayList<>();
+				List<String> errors = new ArrayList<String>();
 				ImagingStudy imagingStudy = (ImagingStudy) referenceDt.getResource();
 				obs = FHIRImagingStudyUtil.generateOpenMRSImagingStudy(imagingStudy, errors);
 				if (!errors.isEmpty()) {
@@ -251,7 +254,7 @@ public class RadiologyHandler extends AbstractHandler implements DiagnosticRepor
 
 	/**
 	 * Check whether there is a Provider in the Database for given uuid. If it's existing, then retrieve it, otherwise
-	 * retrieve from third party server, generate Obs group which represent given ImangingStudy and return it back.
+	 * retrieve from third party server, generate Obs group which represent given ImagingStudy and return it back.
 	 * NOTE: This method is not saving the Obs
 	 *
 	 * @param imagingStudyId FHIR ImagingStudy resource
@@ -265,7 +268,7 @@ public class RadiologyHandler extends AbstractHandler implements DiagnosticRepor
 			String serverBase = FHIRUtils.getDiagnosticReportRadiologyBaseServerURL();
 			ImagingStudy imagingStudy = FHIRRESTfulGenericClient.readImagingStudyById(serverBase, imagingStudyId);
 			// Generate OpenMRS Obs from ImagingStudy Resource
-			List<String> errors = new ArrayList<>();
+			List<String> errors = new ArrayList<String>();
 			imagingStudyObs = FHIRImagingStudyUtil.generateOpenMRSImagingStudy(imagingStudy, errors);
 			if (errors.isEmpty()) {
 				return imagingStudyObs;

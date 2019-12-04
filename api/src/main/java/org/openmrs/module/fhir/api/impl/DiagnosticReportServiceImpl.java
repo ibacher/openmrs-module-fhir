@@ -25,7 +25,7 @@ import org.openmrs.api.EncounterService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.fhir.api.DiagnosticReportService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.diagnosticreport.DiagnosticReportHandler;
 import org.openmrs.module.fhir.api.util.FHIRConstants;
 import org.openmrs.module.fhir.api.util.FHIRDiagnosticReportUtil;
@@ -41,21 +41,22 @@ import java.util.Map;
  */
 public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements DiagnosticReportService {
 
-	public static final String FHIR_DIAGNOSTICREPORT_ORDER_TYPE_TO_HANDLER_MAP = "fhir.diagnosticreport.orderTypeToHandlerMap";
-	private static Map<String, DiagnosticReportHandler> handlers = null;
+	private static final String FHIR_DIAGNOSTICREPORT_ORDER_TYPE_TO_HANDLER_MAP = "fhir.diagnosticreport.orderTypeToHandlerMap";
+
+	private Map<String, DiagnosticReportHandler> handlers = null;
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private FHIRDAO dao;
+	private FHIRDao dao;
 
-	private Map<String, String> orderTypeToHandlerNameMap  = new HashMap<>();
+	private Map<String, String> orderTypeToHandlerNameMap  = new HashMap<String, String>();
 
 	public DiagnosticReportServiceImpl() {
-		orderTypeToHandlerNameMap.put("Lab Order", "LAB");
+		orderTypeToHandlerNameMap.put("Test Order", "LAB");
 		orderTypeToHandlerNameMap.put("Default", "DEFAULT");
 	}
 
-	//TODO: find a better way to do this!!
+	//TODO: find a better way to do this!
 	private void loadHandlerMap() {
 		String orderTypeHandlerMapText = Context.getAdministrationService().getGlobalProperty(FHIR_DIAGNOSTICREPORT_ORDER_TYPE_TO_HANDLER_MAP);
 		if (!StringUtils.isEmpty(orderTypeHandlerMapText)) {
@@ -70,25 +71,16 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 	}
 
 	/**
-	 * Sets handlers using static method
-	 *
-	 * @param currentHandlers
-	 */
-	private static void setStaticHandlers(Map<String, DiagnosticReportHandler> currentHandlers) {
-		DiagnosticReportServiceImpl.handlers = currentHandlers;
-	}
-
-	/**
 	 * @return the dao
 	 */
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return dao;
 	}
 
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.dao = dao;
 	}
 
@@ -106,10 +98,12 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 			if (order == null) {
 				throw new RuntimeException("Can not find order by the accession number");
 			}
+
 			String handlerName = orderTypeToHandlerNameMap.get(order.getOrderType().getName());
 			if (StringUtils.isEmpty(handlerName)) {
 				handlerName = orderTypeToHandlerNameMap.get("DEFAULT");
 			}
+
 			return FHIRDiagnosticReportUtil.getFHIRDiagnosticReport(order.getUuid(), getHandler(handlerName));
 		} else {
 			throw new RuntimeException("Can not identify order by accession number");
@@ -185,7 +179,7 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 	@Override
 	public Map<String, DiagnosticReportHandler> getHandlers() throws APIException {
 		if (handlers == null) {
-			handlers = new LinkedHashMap<>();
+			handlers = new LinkedHashMap<String, DiagnosticReportHandler>();
 		}
 
 		return handlers;
@@ -193,13 +187,14 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 
 	@Override
 	public void setHandlers(Map<String, DiagnosticReportHandler> newHandlers) throws APIException {
+		this.handlers = null;
+
 		if (newHandlers == null) {
-			DiagnosticReportServiceImpl.setStaticHandlers(null);
 			return;
 		}
+
 		for (Map.Entry<String, DiagnosticReportHandler> entry : newHandlers.entrySet()) {
 			registerHandler(entry.getValue().getServiceCategory(), entry.getValue());
-
 		}
 	}
 
@@ -208,7 +203,6 @@ public class DiagnosticReportServiceImpl extends BaseOpenmrsService implements D
 		getHandlers().put(key, handler);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void registerHandler(String key, String handlerClass) throws APIException {
 		try {
