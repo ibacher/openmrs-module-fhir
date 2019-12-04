@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hl7.fhir.dstu3.model.Person;
 import org.openmrs.module.fhir.api.PersonService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.strategies.person.PersonStrategyUtil;
 
 import java.util.List;
@@ -28,19 +28,19 @@ public class PersonServiceImpl implements PersonService {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private FHIRDAO dao;
+	private FHIRDao dao;
 
 	/**
 	 * @return the dao
 	 */
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return dao;
 	}
 
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.dao = dao;
 	}
 

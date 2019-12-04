@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hl7.fhir.dstu3.model.Condition;
 import org.openmrs.module.fhir.api.ConditionService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.strategies.condition.ConditionStrategyUtil;
 import org.openmrs.module.fhir.api.util.ContextUtil;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,19 +31,19 @@ public class ConditionServiceImpl implements ConditionService {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private FHIRDAO dao;
+	private FHIRDao dao;
 
 	/**
 	 * @return the dao
 	 */
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return dao;
 	}
 
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.dao = dao;
 	}
 

@@ -11,7 +11,7 @@ import org.openmrs.module.fhir.api.util.FHIRConstants;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultDiagnosticReportHandler extends AbstractHandler implements DiagnosticReportHandler {
+public class DefaultDiagnosticReportHandler extends AbstractDiagnosticReportHandler implements DiagnosticReportHandler {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 

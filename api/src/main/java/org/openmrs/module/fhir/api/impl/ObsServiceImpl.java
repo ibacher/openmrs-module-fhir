@@ -19,7 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hl7.fhir.dstu3.model.Observation;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.fhir.api.ObsService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.strategies.observation.ObservationStrategyUtil;
 
 import java.util.Date;
@@ -33,19 +33,19 @@ public class ObsServiceImpl extends BaseOpenmrsService implements ObsService {
 
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	private FHIRDAO dao;
+	private FHIRDao dao;
 
 	/**
 	 * @return the dao
 	 */
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return dao;
 	}
 
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.dao = dao;
 	}
 

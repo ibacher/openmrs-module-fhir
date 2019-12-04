@@ -18,7 +18,7 @@ import org.hl7.fhir.dstu3.model.Composition;
 import org.hl7.fhir.dstu3.model.Encounter;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.fhir.api.EncounterService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.strategies.encounter.EncounterStrategyUtil;
 
 import java.util.List;
@@ -28,19 +28,19 @@ import java.util.List;
  */
 public class EncounterServiceImpl extends BaseOpenmrsService implements EncounterService {
 
-	private FHIRDAO dao;
+	private FHIRDao dao;
 
 	/**
 	 * @return the dao
 	 */
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return dao;
 	}
 
 	/**
 	 * @param dao the dao to set
 	 */
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.dao = dao;
 	}
 

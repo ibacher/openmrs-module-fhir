@@ -13,22 +13,31 @@
  */
 package org.openmrs.module.fhir.api.db;
 
-import org.hibernate.SessionFactory;
-import org.openmrs.Obs;
 import org.openmrs.Order;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 /**
  * Database methods for FHIR Module
  */
-public interface FHIRDAO {
+@Transactional
+public interface FHIRDao {
 
-	/*
-	 * Add DAO methods here
+	/**
+	 * Returns the orders for a given accession number
+	 *
+	 * @param accessionNumber The accession number of the order
+	 * @param <Ord> The type of the order
+	 * @return A list of Orders for the given accession number
 	 */
-
 	<Ord extends Order> List<Ord> getOrdersByAccessionNumber(String accessionNumber);
-	//List<Obs> getObsForOrderId(Object orderId);
+
+	/**
+	 * Gets the encounter id corresponding to a given order id
+	 *
+	 * @param orderId the order id to find the encounter for
+	 * @return the id of the encounter to get
+	 */
 	Integer getEncounterIdForObsOrder(int orderId);
 }

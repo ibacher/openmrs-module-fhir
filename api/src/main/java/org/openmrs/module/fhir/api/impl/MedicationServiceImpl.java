@@ -3,20 +3,20 @@ package org.openmrs.module.fhir.api.impl;
 import org.hl7.fhir.dstu3.model.Medication;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.fhir.api.MedicationService;
-import org.openmrs.module.fhir.api.db.FHIRDAO;
+import org.openmrs.module.fhir.api.db.FHIRDao;
 import org.openmrs.module.fhir.api.strategies.medication.MedicationStrategyUtil;
 
 import java.util.List;
 
 public class MedicationServiceImpl extends BaseOpenmrsService implements MedicationService {
 
-	private FHIRDAO fhirdao;
+	private FHIRDao fhirdao;
 
-	public FHIRDAO getDao() {
+	public FHIRDao getDao() {
 		return fhirdao;
 	}
 
-	public void setDao(FHIRDAO dao) {
+	public void setDao(FHIRDao dao) {
 		this.fhirdao = dao;
 	}
 
